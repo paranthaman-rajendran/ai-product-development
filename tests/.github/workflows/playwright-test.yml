@@ -1,0 +1,41 @@
+name: Run Playwright Tests and Track Metrics
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 3 * * *" # Run daily at 3 AM
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Playwright Tests
+        run: npx playwright test
+
+      - name: Upload JSON Test Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test-results.json
+
+      - name: Parse Test Metrics
+        run: |
+          python scripts/generate_metrics.py  # Generate metrics for tracking
+
+      - name: Publish Test Metrics
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-metrics
+          path: test-metrics.json
